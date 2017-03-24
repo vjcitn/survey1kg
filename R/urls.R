@@ -1,42 +1,41 @@
-#
-#%vjcair> s3cmd ls s3://1000genomes/
-#                       DIR   s3://1000genomes/alignment_indices/
-#                       DIR   s3://1000genomes/changelog_details/
-#                       DIR   s3://1000genomes/complete_genomics_indices/
-#                       DIR   s3://1000genomes/data/
-#                       DIR   s3://1000genomes/hgsv_sv_discovery/
-#                       DIR   s3://1000genomes/phase1/
-#                       DIR   s3://1000genomes/phase3/
-#                       DIR   s3://1000genomes/pilot_data/
-#                       DIR   s3://1000genomes/release/
-#                       DIR   s3://1000genomes/sequence_indices/
-#                       DIR   s3://1000genomes/technical/
-#2015-09-08 21:16      1663   s3://1000genomes/20131219.populations.tsv
-#2015-09-08 21:17        97   s3://1000genomes/20131219.superpopulations.tsv
-#2015-09-08 15:01    257098   s3://1000genomes/CHANGELOG
-#2014-09-02 15:39     15977   s3://1000genomes/README.alignment_data
-#2014-01-30 11:13      5289   s3://1000genomes/README.analysis_history
-#2014-01-31 03:44      5967   s3://1000genomes/README.complete_genomics_data
-#2014-08-29 00:22       563   s3://1000genomes/README.crams
-#2013-08-06 16:11       935   s3://1000genomes/README.ebi_aspera_info
-#2013-08-06 16:11      8408   s3://1000genomes/README.ftp_structure
-#2014-09-02 21:19      2082   s3://1000genomes/README.pilot_data
-#2014-09-03 12:33      1938   s3://1000genomes/README.populations
-#2013-08-06 16:11      7857   s3://1000genomes/README.sequence_data
-#2015-06-18 18:28       672   s3://1000genomes/README_missing_files_20150612
-#2015-06-03 19:43       136   s3://1000genomes/README_phase3_alignments_sequence_20150526
-#2015-06-18 16:34       273   s3://1000genomes/README_phase3_data_move_20150612
-#2014-09-03 12:34   3579471   s3://1000genomes/alignment.index
-#2014-09-03 12:32  54743580   s3://1000genomes/analysis.sequence.index
-#2014-09-03 12:34   3549051   s3://1000genomes/exome.alignment.index
-#2014-09-03 12:35  67069489   s3://1000genomes/sequence.index
 
 #' produce a list of templates for URLs of interest
 #' @export
-templates = function() 
+templates = function() {
   list(
-    release_20130502_vcf = "http://1000genomes.s3.amazonaws.com/release/20130502/ALL.chr%%NUM%%.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz"
-  )
+    release_20130502_vcf = "http://1000genomes.s3.amazonaws.com/release/20130502/ALL.chr%%NUM%%.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz",
+    phase3_lowcoverage = "http://1000genomes.s3.amazonaws.com/phase3/data/%%ID%%/alignment/%%ID%%.mapped.ILLUMINA.bwa.%%POP%%.low_coverage.%%DATE%%.bam"
+ )
+}
+
+#s3://1000genomes/phase3/data/NA12878/alignment/NA12878.mapped.ILLUMINA.bwa.CEU.low_coverage.20121211.bam
+#s3://1000genomes/phase3/data/NA12812/alignment/NA12812.unmapped.ILLUMINA.bwa.CEU.low_coverage.20130415.bam
+
+getpop = function(id) {
+ data(igsr_samples)
+ igsr_samples[igsr_samples[,1]==id,]$Population.code
+}
+
+#' generate URLs for bam files of low coverage DNA sequence alignment, based on NA* or HG* sample ids
+#' @param ids character vector with sample identifiers
+#' @param dates character vector with date tags for samples
+#' @examples
+#' lowcov_bam_urls(c("NA12878", "NA12812"), c("20121211", "20130415"))
+#' @export
+lowcov_bam_urls = function (ids, dates) 
+{
+    stopifnot(length(ids)==length(dates))
+    tmpl = templates()$phase3_lowcoverage
+    tvec = sapply(ids, function(curid) gsub("%%ID%%", curid, 
+        tmpl))
+    for (i in 1:length(tvec)) tvec[i] =  gsub("%%POP%%", getpop(ids[i]), 
+        tvec[i])
+    for (i in 1:length(tvec)) tvec[i] =  gsub("%%DATE%%", dates[i], 
+        tvec[i])
+    chk = grep("%%", tvec)
+    if (length(chk)>0) warning("some returned strings seem to lack appropriate substitutions")
+    tvec
+}
 
 .readmes = function() {
  suffs = c(".alignment_data", ".analysis_history", ".complete_genomics_data",

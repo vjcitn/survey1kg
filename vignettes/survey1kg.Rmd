@@ -85,3 +85,60 @@ sapply(chks, length)
 ```
 
 This shows that not all phase3 samples have high coverage alignments.  How many do?
+
+# Some tables of interest
+
+## igsr_samples
+
+The data portal offers a listing of 3900 sample records.  
+
+
+```{r lkigsr}
+data(igsr_samples)
+head(igsr_samples)
+attr(igsr_samples, "src")
+```
+
+It is not clear
+how to map some of them to the `phase3_ids`, that are derived from
+querying the bucket directly.
+
+```{r lkigsr2}
+noo = which(!(igsr_samples[,1] %in% phase3_ids)) 
+table(igsr_samples[noo,"Population.code"])
+```
+
+## relateds
+
+Some samples were found to be related to others.
+
+```{r lkrela}
+data(relateds)
+relateds
+```
+
+# Getting URLs for sequencing data
+
+The overall repository structure and diversity of file names, which
+often include metadata about date of analysis, creates difficulty for
+on-the-fly programmatic interrogation.  A start at generating
+some useful URLs for low coverage DNA sequencing data is illustrated here.
+You have to know relevant sample names and dates for this to work.
+We may want to precompute the dates from a one-time search.
+
+```{r lkurlow}
+demlow = lowcov_bam_urls(c("NA12878", "NA12812"), c("20121211", "20130415"))
+```
+
+We can rapidly grab the header of the first BAM file referenced here.
+It includes metadata about the process generating the alignment data.
+
+```{r geth, cache=TRUE}
+suppressPackageStartupMessages({ 
+ library(Rsamtools)
+})
+h78 = scanBamHeader(demlow[1])
+h78[[1]][[2]][[91]]
+h78[[1]][[2]][[102]]
+h78[[1]][[2]][[103]]
+```
