@@ -1,0 +1,87 @@
+---
+title: "survey1kg -- tools for exploring 1000 genomes in cloud"
+author: "Landmark Bioinfo group"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{survey1kg -- tools for exploring 1000 genomes in cloud}
+  %\VignetteEncoding{UTF-8}
+output:
+  BiocStyle::pdf_document:
+    toc: yes
+    number_sections: yes
+  BiocStyle::html_document:
+    highlight: pygments
+    number_sections: yes
+    theme: united
+    toc: yes
+---
+
+# Introduction
+
+The 1000 genomes data, archived in Amazon S3, is a good first proving
+ground for large scale data exploration and analysis in genomics.  The data have
+evolved and grown, and various representations are available at various
+levels of resolution.
+
+This package includes software to help find and interrogate 1000 genomes resources.
+Here are a couple of illustrative examples.
+
+## Example 1: acquiring README documents
+
+There are a number of short descriptive documents at the top level of the bucket.
+```{r lkrd}
+library(survey1kg)
+get_readme(justList=TRUE) 
+```
+
+The default action is to get the description of populations, and 'cat' it to
+standard output.
+```{r dodef}
+get_readme()
+```
+
+## Example 2: Enumerating bucket contents
+
+The `aws.s3` package will traverse the entire bucket.  By default it acquires information
+on 1000 elements.
+
+```{r dolk, cache=TRUE}
+b1list = get_bucket(bucket = '1000genomes')
+length(b1list)
+sapply(b1list[1:10], "[[", "Key")
+```
+
+We can get details on known components that are deeper in the bucket hierarchy
+using the 'prefix' parameter.  We don't know how much information is
+managed on cell line NA12878, so we pass a high value of `max`.
+
+```{r dolk2, cache=TRUE}
+b2list = get_bucket(bucket = '1000genomes', prefix='phase3/data/NA12878', max=10000)
+length(b2list)
+ks = sapply(b2list, "[[", "Key")
+table(sapply(strsplit(ks, "/"), "[", 4))
+```
+
+Let's press on to see what is available for exome alignments for this sample:
+
+```{r doexo}
+b2list = get_bucket(bucket = '1000genomes', 
+  prefix='phase3/data/NA12878/exome_alignment')
+ks = sapply(b2list, "[[", "Key")
+as.character(gsub("phase3/data/NA12878/exome_alignment/", "", ks))
+```
+
+## Example 3: Verifying data availability for all samples
+
+We used s3cmd to list the sample names in the phase3/data subfolder.
+```{r lkp3ids}
+data(phase3_ids)
+head(phase3_ids)
+ptmp = function(id) sub("%%ID%%", id, "phase3/data/%%ID%%/high_coverage_alignment/")
+prefs = sapply(phase3_ids[1:10], function(x) ptmp(x))
+chks = lapply(prefs, function(x) get_bucket(bucket = '1000genomes', prefix=x))
+sapply(chks, length)
+```
+
+This shows that not all phase3 samples have high coverage alignments.  How many do?

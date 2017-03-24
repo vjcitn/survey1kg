@@ -1,0 +1,13 @@
+Package: survey1kg
+Title: tools for surveying and querying 1000 genomes
+Description: Support for surveying and querying 1000 genomes.
+Version: 0.0.1
+Author: Vince Carey
+Suggests: testthat, dplyr, magrittr
+Depends: methods, aws.s3
+Maintainer: VJ Carey <stvjc@channing.harvard.edu>
+VignetteBuilder: knitr
+License: Artistic-2.0
+LazyLoad: yes
+RoxygenNote: 6.0.1
+Remotes: git::https://github.com/cloudyr/aws.s3.git
