@@ -1,7 +1,7 @@
 Package: survey1kg
 Title: tools for surveying and querying 1000 genomes
 Description: Support for surveying and querying 1000 genomes.
-Version: 0.0.4
+Version: 0.0.5
 Author: Vince Carey
 Suggests: testthat, dplyr, magrittr, Rsamtools
 Depends: methods, aws.s3
