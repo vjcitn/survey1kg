@@ -142,3 +142,18 @@ h78[[1]][[2]][[91]]
 h78[[1]][[2]][[102]]
 h78[[1]][[2]][[103]]
 ```
+
+# Obtaining URLs for exome sequences
+
+In this section we will show how to drill into aws.s3 survey of phase3
+files, which is very cumbersome, and we would like a better approach.
+
+```{r getbuck, eval=FALSE}
+b1list = get_bucket(bucket = '1000genomes', prefix="phase3/data/", max=10000)
+st = sapply(b1list, "[[", "Key") 
+pa = grep("\\.mapped.*exome.*bam$", st, value=TRUE)
+```
+
+With this code chunk we find 181 exome sequence files.  They are saved
+in exomeBam_181.rda in the data part of this package.
+
