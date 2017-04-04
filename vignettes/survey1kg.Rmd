@@ -157,3 +157,16 @@ pa = grep("\\.mapped.*exome.*bam$", st, value=TRUE)
 With this code chunk we find 181 exome sequence files.  They are saved
 in exomeBam_181.rda in the data part of this package.
 
+# Obtaining sequence content and quality
+
+```{r dopar}
+data(exomeBam_181)
+library(erma)
+orm = range(genemodel("ORMDL3"))
+seqlevelsStyle(orm) = "NCBI"  # match the BAM
+library(Rsamtools)
+mypar = ScanBamParam(which=orm, what=c("seq", "qual"))
+al1 = readGAlignments(exomeBam181[1], param=mypar)
+al1
+```
+
